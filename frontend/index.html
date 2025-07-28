@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Model Training Platform - YOLO & Gemma</title>
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>🤖 AI Trainer</h2>
+                <div class="status-indicator" id="apiStatus">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Connecting...</span>
+                </div>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#" class="nav-link active" data-section="dashboard">📊 Dashboard</a></li>
+                <li><a href="#" class="nav-link" data-section="yolo">🎯 Train YOLO</a></li>
+                <li><a href="#" class="nav-link" data-section="gemma">💬 Train Gemma</a></li>
+                <li><a href="#" class="nav-link" data-section="jobs">⚡ Active Jobs</a></li>
+                <li><a href="#" class="nav-link" data-section="models">📦 Model Library</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="content-section active">
+                <div class="section-header">
+                    <div>
+                        <h1>Dashboard</h1>
+                        <p>Overview of your AI model training and deployment</p>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">🏃‍♂️</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="runningJobs">0</div>
+                            <div class="stat-label">Running Jobs</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="completedJobs">0</div>
+                            <div class="stat-label">Completed</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📦</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="totalModels">0</div>
+                            <div class="stat-label">Models</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⚠️</div>
+                        <div class="stat-info">
+                            <div class="stat-value" id="failedJobs">0</div>
+                            <div class="stat-label">Failed</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <h3>Quick Actions</h3>
+                    <div class="action-cards">
+                        <div class="action-card" data-action="yolo">
+                            <div class="action-icon">🎯</div>
+                            <h4>Object Detection</h4>
+                            <p>Train YOLO models for detecting objects in images with state-of-the-art accuracy</p>
+                            <button class="btn btn--primary">Start Training</button>
+                        </div>
+                        <div class="action-card" data-action="gemma">
+                            <div class="action-icon">💬</div>
+                            <h4>Language Model</h4>
+                            <p>Fine-tune Gemma models for text generation and natural language processing tasks</p>
+                            <button class="btn btn--primary">Start Training</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="recent-activity">
+                    <h3>Recent Activity</h3>
+                    <div class="activity-list" id="recentActivity">
+                        <div class="activity-item">
+                            <div class="activity-icon">ℹ️</div>
+                            <div class="activity-content">
+                                <div class="activity-title">Welcome to AI Model Training Platform</div>
+                                <div class="activity-time">Start by training your first model</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- YOLO Training Section -->
+            <section id="yolo" class="content-section">
+                <div class="section-header">
+                    <div>
+                        <h1>YOLO Training</h1>
+                        <p>Configure and launch object detection model training</p>
+                    </div>
+                </div>
+
+                <form id="yoloForm" class="training-form">
+                    <div class="form-grid">
+                        <div class="form-section">
+                            <h3>Model Configuration</h3>
+                            <div class="form-group">
+                                <label class="form-label">YOLO Model</label>
+                                <select class="form-control" id="yoloModel" required>
+                                    <option value="">Select a model</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Training Name</label>
+                                <input type="text" class="form-control" id="yoloTrainingName" placeholder="Enter training job name" required>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Dataset Upload</h3>
+                            <div class="upload-zone" id="yoloUpload">
+                                <div class="upload-icon">📁</div>
+                                <div class="upload-text">
+                                    <h4>Drop your dataset here</h4>
+                                    <p>Or click to browse files</p>
+                                    <span class="file-types">ZIP, images + annotations</span>
+                                </div>
+                                <input type="file" id="yoloFileInput" accept=".zip,.jpg,.png,.txt,.json" multiple style="display: none;">
+                            </div>
+                            <div class="upload-progress hidden" id="yoloUploadProgress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="yoloProgressFill"></div>
+                                </div>
+                                <div class="progress-text" id="yoloProgressText">0%</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="parameters-section">
+                        <h3>Training Parameters</h3>
+                        <div class="params-grid">
+                            <div class="param-group">
+                                <label class="form-label">Epochs</label>
+                                <div class="param-control">
+                                    <input type="range" id="yoloEpochs" min="1" max="1000" value="100" class="slider">
+                                    <span class="param-value" id="yoloEpochsValue">100</span>
+                                </div>
+                            </div>
+                            <div class="param-group">
+                                <label class="form-label">Batch Size</label>
+                                <div class="param-control">
+                                    <input type="range" id="yoloBatchSize" min="1" max="128" value="16" class="slider">
+                                    <span class="param-value" id="yoloBatchSizeValue">16</span>
+                                </div>
+                            </div>
+                            <div class="param-group">
+                                <label class="form-label">Learning Rate</label>
+                                <div class="param-control">
+                                    <input type="range" id="yoloLearningRate" min="0.0001" max="0.1" step="0.0001" value="0.01" class="slider">
+                                    <span class="param-value" id="yoloLearningRateValue">0.01</span>
+                                </div>
+                            </div>
+                            <div class="param-group">
+                                <label class="form-label">Image Size</label>
+                                <div class="param-control">
+                                    <input type="range" id="yoloImageSize" min="320" max="1280" step="32" value="640" class="slider">
+                                    <span class="param-value" id="yoloImageSizeValue">640</span>
+                                </div>
+                            </div>
+                            <div class="param-group">
+                                <label class="form-label">Patience</label>
+                                <div class="param-control">
+                                    <input type="range" id="yoloPatience" min="1" max="200" value="50" class="slider">
+                                    <span class="param-value" id="yoloPatienceValue">50</span>
+                                </div>
+                            </div>
+                            <div class="param-group">
+                                <label class="form-label">Device</label>
+                                <select class="form-control" id="yoloDevice">
+                                    <option value="cpu">CPU</option>
+                                    <option value="gpu" selected>GPU</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn--outline" id="validateYoloConfig">Validate Configuration</button>
+                        <button type="submit" class="btn btn--primary" disabled id="startYoloTraining">Start Training</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Gemma Training Section -->
+            <section id="gemma" class="content-section">
+                <div class="section-header">
+                    <div>
+                        <h1>Gemma Training</h1>
+                        <p>Fine-tune Gemma models for natural language processing tasks</p>
+                    </div>
+                </div>
+
+                <form id="gemmaForm" class="training-form">
+                    <div class="form-grid">
+                        <div class="form-section">
+                            <h3>Model Configuration</h3>
+                            <div class="form-group">
+                                <label class="form-label">Gemma Model</label>
+                                <select class="form-control" id="gemmaModel" required>
+                                    <option value="">Select a model</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Training Name</label>
+                                <input type="text" class="form-control" id="gemmaTrainingName" placeholder="Enter training job name" required>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Text Dataset</h3>
+                            <div class="upload-zone" id="gemmaUpload">
+                                <div class="upload-icon">📄</div>
+                                <div class="upload-text">
+                                    <h4>Drop your dataset here</h4>
+                                    <p>Or click to browse files</p>
+                                    <span class="file-types">JSON, CSV, TXT</span>
+                                </div>
+                                <input type="file" id="gemmaFileInput" accept=".json,.csv,.txt" style="display: none;">
+                            </div>
+                            <div class="upload-progress hidden" id="gemmaUploadProgress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="gemmaProgressFill"></div>
+                                </div>
+                                <div class="progress-text" id="gemmaProgressText">0%</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="parameters-section">
+                        <h3>Training Parameters</h3>
+                        <div class="params-grid">
+                            <div class="param-group">
+                                <label class="form-label">Epochs</label>
+                                <div class="param-control">
+                                    <input type="range" id="gemmaEpochs" min="1" max="10" value="3" class="slider">
+                                    <span class="param-value" id="gemmaEpochsValue">3</span>
+                                </div>
+                            </div>
+                            <div class="param-group">
+                                <label class="form-label">Batch Size</label>
+                                <div class="param-control">
+                                    <input type="range" id="gemmaBatchSize" min="1" max="32" value="4" class="slider">
+                                    <span class="param-value" id="gemmaBatchSizeValue">4</span>
+                                </div>
+                            </div>
+                            <div class="param-group">
+                                <label class="form-label">Learning Rate</label>
+                                <div class="param-control">
+                                    <input type="range" id="gemmaLearningRate" min="0.00001" max="0.001" step="0.00001" value="0.0001" class="slider">
+                                    <span class="param-value" id="gemmaLearningRateValue">0.0001</span>
+                                </div>
+                            </div>
+                            <div class="param-group">
+                                <label class="form-label">Max Length</label>
+                                <div class="param-control">
+                                    <input type="range" id="gemmaMaxLength" min="128" max="2048" step="32" value="512" class="slider">
+                                    <span class="param-value" id="gemmaMaxLengthValue">512</span>
+                                </div>
+                            </div>
+                            <div class="param-group">
+                                <label class="form-label">Warmup Steps</label>
+                                <div class="param-control">
+                                    <input type="range" id="gemmaWarmupSteps" min="0" max="1000" step="10" value="100" class="slider">
+                                    <span class="param-value" id="gemmaWarmupStepsValue">100</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn--outline" id="validateGemmaConfig">Validate Configuration</button>
+                        <button type="submit" class="btn btn--primary" disabled id="startGemmaTraining">Start Training</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Jobs Section -->
+            <section id="jobs" class="content-section">
+                <div class="section-header">
+                    <div>
+                        <h1>Training Jobs</h1>
+                        <p>Monitor your training jobs in real-time</p>
+                    </div>
+                    <button class="btn btn--outline" id="refreshJobs">🔄 Refresh</button>
+                </div>
+
+                <div class="jobs-filters">
+                    <select class="form-control" id="jobTypeFilter">
+                        <option value="">All Models</option>
+                        <option value="yolo">YOLO</option>
+                        <option value="gemma">Gemma</option>
+                    </select>
+                    <select class="form-control" id="jobStatusFilter">
+                        <option value="">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="running">Running</option>
+                        <option value="completed">Completed</option>
+                        <option value="failed">Failed</option>
+                    </select>
+                </div>
+
+                <div class="jobs-container" id="jobsContainer">
+                    <div class="no-jobs">
+                        <div class="no-jobs-icon">📊</div>
+                        <h3>No training jobs</h3>
+                        <p>Start your first training to see jobs appear here</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Models Section -->
+            <section id="models" class="content-section">
+                <div class="section-header">
+                    <div>
+                        <h1>Model Library</h1>
+                        <p>Manage and test your trained models</p>
+                    </div>
+                    <button class="btn btn--outline" id="refreshModels">🔄 Refresh</button>
+                </div>
+
+                <div class="models-container" id="modelsContainer">
+                    <div class="no-models">
+                        <div class="no-models-icon">📦</div>
+                        <h3>No trained models</h3>
+                        <p>Complete a training job to see your models here</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Job Detail Modal -->
+    <div class="modal hidden" id="jobModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="jobModalTitle">Job Details</h3>
+                <button class="modal-close" id="closeJobModal">&times;</button>
+            </div>
+            <div class="modal-body" id="jobModalBody">
+                <!-- Job details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Model Test Modal -->
+    <div class="modal hidden" id="testModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="testModalTitle">Test Model</h3>
+                <button class="modal-close" id="closeTestModal">&times;</button>
+            </div>
+            <div class="modal-body" id="testModalBody">
+                <!-- Test interface will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="static/app.js"></script>
+</body>
+</html>

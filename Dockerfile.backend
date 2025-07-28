@@ -1,0 +1,53 @@
+# ==============================================================================
+# FICHIER Dockerfile.backend - POUR LES SERVICES BACKEND
+# ==============================================================================
+
+# Utilise l'image de base NVIDIA CUDA avec les outils de développement
+FROM nvidia/cuda:12.1.1-cudnn8-devel-ubuntu22.04
+
+# Configure l'environnement pour éviter les installations interactives
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Installe Python et les dépendances système critiques pour OpenCV, BDD, et Git
+RUN apt-get update && apt-get install -y \
+    python3.11 \
+    python3-pip \
+    libgl1 \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    git \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Met à jour les liens symboliques pour python
+RUN ln -sf /usr/bin/python3.11 /usr/bin/python3 && \
+    ln -sf /usr/bin/python3.11 /usr/bin/python
+
+# Met à jour pip
+RUN python3 -m pip install --upgrade pip
+
+# Définit le répertoire de travail
+WORKDIR /app
+
+# Copie et installe les dépendances Python
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu121
+
+# Copie le code de l'application
+COPY backend/ ./backend/
+COPY frontend/ ./frontend/
+COPY scripts/ ./scripts/
+
+# Crée les répertoires nécessaires
+RUN mkdir -p /app/datasets /app/models/pretrained /app/logs
+
+# Pré-télécharge les modèles YOLO pour éviter les problèmes de connectivité dans le worker
+RUN wget -P /app/models/pretrained/ https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8n.pt && \
+    wget -P /app/models/pretrained/ https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8s.pt && \
+    wget -P /app/models/pretrained/ https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8m.pt
+
+# La commande par défaut est surchargée dans docker-compose.yml pour chaque service
+CMD ["celery", "-A", "backend.celery_app:celery_app", "worker", "--loglevel=info"]
